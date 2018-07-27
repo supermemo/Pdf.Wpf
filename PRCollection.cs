@@ -6,7 +6,7 @@ using System.Windows.Media;
 
 namespace Patagames.Pdf.Net.Controls.Wpf
 {
-	internal class PRCollection : Dictionary<PdfPage, PRItem>
+	public class PRCollection : Dictionary<PdfPage, PRItem>
 	{
 		private PdfBitmap _canvasBitmap = null;
 		private int _waitTime;

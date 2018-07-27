@@ -4,7 +4,7 @@ using System.Windows.Media.Imaging;
 
 namespace Patagames.Pdf.Net.Controls.Wpf
 {
-	internal class PRItem
+	public class PRItem
 	{
 		public ProgressiveRenderingStatuses status;
 	}

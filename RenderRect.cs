@@ -3,7 +3,7 @@ using System.Windows;
 
 namespace Patagames.Pdf.Net.Controls.Wpf
 {
-    internal struct RenderRect
+    public struct RenderRect
     {
         public bool IsChecked { get; set; }
         public double X { get; set; }

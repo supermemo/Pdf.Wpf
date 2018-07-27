@@ -23,25 +23,25 @@ namespace Patagames.Pdf.Net.Controls.Wpf
     [LicenseProvider]
     public partial class PdfViewer : Control, IScrollInfo
     {
-        #region Private fields
-        private bool _preventStackOverflowBugWorkaround = false;
-        private SelectInfo _selectInfo = new SelectInfo() { StartPage = -1 };
-        private SortedDictionary<int, List<HighlightInfo>> _highlightedText = new SortedDictionary<int, List<HighlightInfo>>();
-        private bool _mousePressed = false;
-        private bool _mousePressedInLink = false;
-        private bool _isShowSelection = false;
-        private int _onstartPageIndex = 0;
-        private Point _panToolInitialScrollPosition;
-        private Point _panToolInitialMousePosition;
+        #region protected fields
+        protected bool _preventStackOverflowBugWorkaround = false;
+        protected SelectInfo _selectInfo = new SelectInfo() { StartPage = -1 };
+        protected SortedDictionary<int, List<HighlightInfo>> _highlightedText = new SortedDictionary<int, List<HighlightInfo>>();
+        protected bool _mousePressed = false;
+        protected bool _mousePressedInLink = false;
+        protected bool _isShowSelection = false;
+        protected int _onstartPageIndex = 0;
+        protected Point _panToolInitialScrollPosition;
+        protected Point _panToolInitialMousePosition;
 
-        private PdfForms _fillForms;
-        private List<Rect> _selectedRectangles = new List<Rect>();
-        private Pen _pageBorderColorPen = Helpers.CreatePen((Color)PageBorderColorProperty.DefaultMetadata.DefaultValue);
-        private Pen _pageSeparatorColorPen = Helpers.CreatePen((Color)PageSeparatorColorProperty.DefaultMetadata.DefaultValue);
-		private Pen _currentPageHighlightColorPen = Helpers.CreatePen((Color)CurrentPageHighlightColorProperty.DefaultMetadata.DefaultValue, 4);
+        protected PdfForms _fillForms;
+        protected List<Rect> _selectedRectangles = new List<Rect>();
+        protected Pen _pageBorderColorPen = Helpers.CreatePen((Color)PageBorderColorProperty.DefaultMetadata.DefaultValue);
+        protected Pen _pageSeparatorColorPen = Helpers.CreatePen((Color)PageSeparatorColorProperty.DefaultMetadata.DefaultValue);
+		protected Pen _currentPageHighlightColorPen = Helpers.CreatePen((Color)CurrentPageHighlightColorProperty.DefaultMetadata.DefaultValue, 4);
 
-        private RenderRect[] _renderRects;
-        private int _startPage
+        protected RenderRect[] _renderRects;
+        protected int _startPage
         {
             get
             {
@@ -58,7 +58,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
                 }
             }
         }
-        private int _endPage
+        protected int _endPage
         {
             get
             {
@@ -76,28 +76,28 @@ namespace Patagames.Pdf.Net.Controls.Wpf
             }
         }
 
-        private Size _extent = new Size(0, 0);
-        private Size _viewport = new Size(0, 0);
-        private Point _autoScrollPosition = new Point(0, 0);
-        private bool _isProgrammaticallyFocusSetted=false;
+        protected Size _extent = new Size(0, 0);
+        protected Size _viewport = new Size(0, 0);
+        protected Point _autoScrollPosition = new Point(0, 0);
+        protected bool _isProgrammaticallyFocusSetted=false;
 
-        private PRCollection _prPages = new PRCollection();
-        private System.Windows.Threading.DispatcherTimer _invalidateTimer = null;
+        protected PRCollection _prPages = new PRCollection();
+        protected System.Windows.Threading.DispatcherTimer _invalidateTimer = null;
 
         WriteableBitmap _canvasWpfBitmap = null;
-        private bool _loadedByViewer = true;
+        protected bool _loadedByViewer = true;
 
-        private struct CaptureInfo
+        protected struct CaptureInfo
         {
             public PdfForms forms;
             public SynchronizationContext sync;
             public int color;
         }
-        private CaptureInfo _externalDocCapture;
+        protected CaptureInfo _externalDocCapture;
 
-		private Point _scrollPoint;
-		private bool _scrollPointSaved;
-        private bool _smoothSelection;
+		protected Point _scrollPoint;
+		protected bool _scrollPointSaved;
+        protected bool _smoothSelection;
         #endregion
 
         #region Events
@@ -1917,7 +1917,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 				_prPages.InitCanvas(new Helpers.Int32Size(cw, ch));
 				bool allPagesAreRendered = true;
 
-				PdfBitmap formsBitmap = null;
+				PdfBitmap overlayBitmap = null;
 				//Drawing PART 1. Page content into canvas and some other things
 				for (int i = _startPage; i <= _endPage; i++)
 				{
@@ -1948,27 +1948,27 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 					//Draw page
 					bool isPageDrawn = DrawPage(drawingContext, Document.Pages[i], actualRect);
 					allPagesAreRendered &= isPageDrawn;
-
+          
 					if (isPageDrawn)  //Draw fill forms
 					{
 						//Create new bitmap if need
-						if (formsBitmap == null)
-							formsBitmap = new PdfBitmap(_prPages.CanvasSize.Width, _prPages.CanvasSize.Height, true);
+						if (overlayBitmap == null)
+							overlayBitmap = new PdfBitmap(_prPages.CanvasSize.Width, _prPages.CanvasSize.Height, true);
 						//Copy image of rendered page from canvas bitmap to newly created bitmap
 						int ax = Helpers.PointsToPixels(actualRect.X);
 						int ay = Helpers.PointsToPixels(actualRect.Y);
 						int aw = Helpers.PointsToPixels(actualRect.Width);
 						int ah = Helpers.PointsToPixels(actualRect.Height);
-						Pdfium.FPDFBitmap_CompositeBitmap(formsBitmap.Handle, ax, ay, aw, ah, _prPages.CanvasBitmap.Handle, ax, ay, BlendTypes.FXDIB_BLEND_NORMAL);
+						Pdfium.FPDFBitmap_CompositeBitmap(overlayBitmap.Handle, ax, ay, aw, ah, _prPages.CanvasBitmap.Handle, ax, ay, BlendTypes.FXDIB_BLEND_NORMAL);
 						//Draw fillForms to newly create bitmap
-						DrawFillForms(formsBitmap, Document.Pages[i], actualRect);
+						//DrawFillForms(formsBitmap, Document.Pages[i], actualRect);
 						//Draw fillform selection
-						DrawFillFormsSelection(formsBitmap, _selectedRectangles);
+						//DrawFillFormsSelection(formsBitmap, _selectedRectangles);
 						//Draw text highlight
 						if (_highlightedText.ContainsKey(i))
-							DrawTextHighlight(formsBitmap, _highlightedText[i], i);
+							DrawTextHighlight(overlayBitmap, _highlightedText[i], i);
 						//Draw text selection
-						DrawTextSelection(formsBitmap, selTmp, i);
+						DrawTextSelection(overlayBitmap, selTmp, i);
 					}
 					else if (ShowLoadingIcon) //or loading icons
 						DrawLoadingIcon(drawingContext, Document.Pages[i], actualRect);
@@ -1978,13 +1978,13 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 				}
 
 				//Draw canvas
-				DrawRenderedPagesToDevice(drawingContext, _prPages.CanvasBitmap, formsBitmap, _prPages.CanvasSize.Width, _prPages.CanvasSize.Height);
-				if (formsBitmap != null)
-					formsBitmap.Dispose();
+				DrawRenderedPagesToDevice(drawingContext, _prPages.CanvasBitmap, overlayBitmap, _prPages.CanvasSize.Width, _prPages.CanvasSize.Height);
+				if (overlayBitmap != null)
+					overlayBitmap.Dispose();
 
 				//Draw pages separators
 				DrawPageSeparators(drawingContext, ref separator);
-
+        
 				//Drawing PART 2.
 				for (int i = _startPage; i <= _endPage; i++)
 				{
@@ -2004,8 +2004,10 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 					DrawTextSelection(drawingContext, selTmp, i);
 					//Draw current page highlight
 					DrawCurrentPageHighlight(drawingContext, i, actualRect);
-				}
 
+				    DrawCustom(drawingContext, i);
+				}
+        
 				if (!allPagesAreRendered)
 					StartInvalidateTimer();
 				else if ((RenderFlags & (RenderFlags.FPDF_THUMBNAIL | RenderFlags.FPDF_HQTHUMBNAIL)) != 0)
@@ -2283,15 +2285,24 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 		{
 			if (actualRect.Width <= 0 || actualRect.Height <= 0)
 				return true;
-			int width = Helpers.PointsToPixels(actualRect.Width);
-			int height = Helpers.PointsToPixels(actualRect.Height);
-			if (width <= 0 || height <= 0)
-				return true;
+			//int width = Helpers.PointsToPixels(actualRect.Width);
+			//int height = Helpers.PointsToPixels(actualRect.Height);
+			//if (width <= 0 || height <= 0)
+			//	return true;
 
-			var pageRect = new Int32Rect(
-				Helpers.PointsToPixels(actualRect.X), 
-				Helpers.PointsToPixels(actualRect.Y), width, height);
-			return _prPages.RenderPage(page, pageRect, PageRotation(page), RenderFlags, UseProgressiveRender);
+			//var pageRect = new Int32Rect(
+			//	Helpers.PointsToPixels(actualRect.X), 
+			//	Helpers.PointsToPixels(actualRect.Y), width, height);
+          
+		  var pageRect = new Int32Rect(
+		    (int)actualRect.X, 
+		    (int)actualRect.Y, (int)actualRect.Width, (int)actualRect.Height);
+
+		  return _prPages.RenderPage(page,
+		                             pageRect,
+		                             PageRotation(page),
+		                             RenderFlags,
+		                             UseProgressiveRender);
 		}
 
 		/// <summary>
@@ -2447,9 +2458,14 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 				var ti = Document.Pages[pageIndex].Text.GetTextInfo(s, len);
                 var rects = NormalizeRects(ti.Rects, pageIndex);
                 foreach (var r in rects)
-                    bitmap.FillRectEx(r.X, r.Y, r.Width, r.Height, Helpers.ToArgb(TextSelectColor), FormsBlendMode);
+                    bitmap.FillRectEx(r.X, r.Y, r.Width, r.Height, Helpers.ToArgb(TextSelectColor));
 			}
 		}
+
+      
+        protected virtual void DrawCustom(DrawingContext drawingContext, int pageIndex)
+        {
+        }
 
 		/// <summary>
 		/// Draw loading icon
@@ -2678,7 +2694,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 			if (_canvasWpfBitmap == null || _canvasWpfBitmap.PixelWidth != canvasWidth || _canvasWpfBitmap.PixelHeight != canvasHeight)
 				_canvasWpfBitmap = new WriteableBitmap(canvasWidth, canvasHeight, Helpers.Dpi, Helpers.Dpi, PixelFormats.Bgra32, null);
 
-
+		  //canvasBitmap.Image.Save("D:\\Temp\\pdfium_render.png");
 			if (formsBitmap == null)
 				_canvasWpfBitmap.WritePixels(new Int32Rect(0, 0, canvasWidth, canvasHeight), canvasBitmap.Buffer, canvasStride * canvasHeight, canvasStride, 0, 0);
 			else
@@ -2720,8 +2736,8 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 		}
         #endregion
 
-        #region Private methods
-        private bool CanDisposePage(int i)
+        #region protected methods
+        protected bool CanDisposePage(int i)
         {
             if (_highlightedText.ContainsKey(i))
                 return false;
@@ -2733,7 +2749,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
             return true;
         }
 
-        private void SaveScrollPoint()
+        protected void SaveScrollPoint()
 		{
 			_scrollPointSaved = false;
 			if (_renderRects != null)
@@ -2743,7 +2759,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 			}
 		}
 
-		private void RestoreScrollPoint()
+		protected void RestoreScrollPoint()
 		{
 			if (_scrollPointSaved)
 			{
@@ -2753,7 +2769,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 			}
 		}
 
-		private void GenerateSelectedTextProperty()
+		protected void GenerateSelectedTextProperty()
         {
             string ret = "";
             if (Document != null)
@@ -2783,7 +2799,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
             OnSelectionChanged(EventArgs.Empty);
         }
 
-        private CaptureInfo CaptureFillForms(PdfForms fillForms)
+        protected CaptureInfo CaptureFillForms(PdfForms fillForms)
 		{
 			var ret = new CaptureInfo();
 			if (fillForms == null)
@@ -2804,7 +2820,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 			return ret;
 		}
 
-		private void ReleaseFillForms(CaptureInfo captureInfo)
+		protected void ReleaseFillForms(CaptureInfo captureInfo)
 		{
 			if (captureInfo.forms == null)
 				return;
@@ -2819,7 +2835,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 			captureInfo.forms.SetHighlightColorEx(FormFieldTypes.FPDF_FORMFIELD_UNKNOWN, captureInfo.color);
 		}
 
-		private void CalcAndSetCurrentPage()
+		protected void CalcAndSetCurrentPage()
 		{
 			if (Document != null)
 			{
@@ -2832,7 +2848,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 			}
 		}
 
-		private void ProcessLinkClicked(PdfLink pdfLink, PdfWebLink webLink)
+		protected void ProcessLinkClicked(PdfLink pdfLink, PdfWebLink webLink)
 		{
 			var args = new PdfBeforeLinkClickedEventArgs(webLink, pdfLink);
 			OnBeforeLinkClicked(args);
@@ -2843,26 +2859,26 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 			else if (pdfLink != null && pdfLink.Action != null)
 				ProcessAction(pdfLink.Action);
 			else if (webLink != null)
-				Process.Start(webLink.Url);
+			    System.Diagnostics.Process.Start(webLink.Url);
 			OnAfterLinkClicked(new PdfAfterLinkClickedEventArgs(webLink, pdfLink));
 
 		}
 
-		private void ProcessDestination(PdfDestination pdfDestination)
+		protected void ProcessDestination(PdfDestination pdfDestination)
 		{
 			ScrollToPage(pdfDestination.PageIndex);
 			InvalidateVisual();
 		}
 
-		private void ProcessAction(PdfAction pdfAction)
+		protected void ProcessAction(PdfAction pdfAction)
 		{
 			if (pdfAction.ActionType == ActionTypes.Uri)
-				Process.Start(pdfAction.ActionUrl);
+			    System.Diagnostics.Process.Start(pdfAction.ActionUrl);
 			else if (pdfAction.Destination != null)
 				ProcessDestination(pdfAction.Destination);
 		}
 
-		private int CalcCurrentPage()
+		protected int CalcCurrentPage()
 		{
 			int idx = -1;
 			double maxArea = 0;
@@ -2888,7 +2904,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 			return idx;
 		}
 
-		private void CalcPageSeparator(Rect actualRect, int pageIndex, ref List<Point> separator)
+		protected void CalcPageSeparator(Rect actualRect, int pageIndex, ref List<Point> separator)
 		{
 			if (!ShowPageSeparator || pageIndex == _endPage || ViewMode == ViewModes.SinglePage)
 				return;
@@ -2920,7 +2936,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 			}
 		}
 
-		private bool GetRenderRectEx(ref Rect rrect, int processedPage)
+		protected bool GetRenderRectEx(ref Rect rrect, int processedPage)
 		{
             if (_renderRects.Length < OptimizedLoadThreshold || processedPage == 0)
             {
@@ -2936,14 +2952,14 @@ namespace Patagames.Pdf.Net.Controls.Wpf
                 return false;
 		}
 
-		private Rect GetRenderRect(int index)
+		protected Rect GetRenderRect(int index)
 		{
 			Size size = GetRenderSize(index);
 			Point location = GetRenderLocation(size);
 			return Helpers.CreateRect(location, size);
 		}
 
-		private Point GetRenderLocation(Size size)
+		protected Point GetRenderLocation(Size size)
 		{
 			Size clientSize = ClientRect.Size;
 			if(ScrollOwner!= null)
@@ -2990,7 +3006,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 			return new Point(x, y);
 		}
 
-		private Size GetRenderSize(int index)
+		protected Size GetRenderSize(int index)
 		{
 			Size clientSize = ClientRect.Size;
 			if (ScrollOwner != null)
@@ -3043,7 +3059,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
             return ret;
         }
 
-		private Size CalcAppropriateSize(double w, double h, double fitWidth, double fitHeight)
+		protected Size CalcAppropriateSize(double w, double h, double fitWidth, double fitHeight)
 		{
 			if (fitWidth < 0)
 				fitWidth = 0;
@@ -3076,7 +3092,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 			return new Size(nw, nh);
 		}
 
-        private void AlignVertical(int from = 0, int to = -1)
+        protected void AlignVertical(int from = 0, int to = -1)
         {
             if (to == -1)
                 to = _renderRects.Length;
@@ -3090,7 +3106,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
             }
         }
 
-        private void AlignHorizontal(int from = 0, int to = -1)
+        protected void AlignHorizontal(int from = 0, int to = -1)
         {
             if (to == -1)
                 to = _renderRects.Length;
@@ -3104,7 +3120,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
             }
         }
 
-        private int DeviceToPage(double x, double y, out Point pagePoint)
+        protected int DeviceToPage(double x, double y, out Point pagePoint)
 		{
 			for (int i = _startPage; i <= _endPage; i++)
 			{
@@ -3128,7 +3144,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 
 		}
 
-		private Helpers.Int32Point PageToDevice(double x, double y, int pageIndex)
+		protected Helpers.Int32Point PageToDevice(double x, double y, int pageIndex)
 		{
 			var rect = renderRects(pageIndex);
 			rect.X += _autoScrollPosition.X;
@@ -3144,7 +3160,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 			return new Helpers.Int32Point(dx, dy);
 		}
 
-        private Int32Rect PageToDeviceRect(FS_RECTF rc, int pageIndex)
+        protected Int32Rect PageToDeviceRect(FS_RECTF rc, int pageIndex)
         {
             var pt1 = PageToDevice(rc.left, rc.top, pageIndex);
             var pt2 = PageToDevice(rc.right, rc.bottom, pageIndex);
@@ -3155,7 +3171,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
             return new Int32Rect(x, y, w, h);
         }
 
-        private PageRotate PageRotation(PdfPage pdfPage)
+        protected PageRotate PageRotation(PdfPage pdfPage)
 		{
 			int rot = pdfPage.Rotation - pdfPage.OriginalRotation;
 			if (rot < 0)
@@ -3163,7 +3179,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 			return (PageRotate)rot;
 		}
 
-		private SelectInfo NormalizeSelectionInfo()
+		protected SelectInfo NormalizeSelectionInfo()
 		{
 			var selTmp = _selectInfo;
 			if (selTmp.StartPage >= 0 && selTmp.EndPage >= 0)
@@ -3192,7 +3208,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 			return selTmp;
 		}
 
-        private List<Int32Rect> NormalizeRects(IEnumerable<FS_RECTF> rects, int pageIndex)
+        protected virtual IEnumerable<Int32Rect> NormalizeRects(IEnumerable<FS_RECTF> rects, int pageIndex)
         {
             List<Int32Rect> rows = new List<Int32Rect>();
 
@@ -3250,7 +3266,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
             return rows;
         }
 
-        private Size CalcVertical()
+        protected Size CalcVertical()
 		{
 			double width = 0;
 			Rect rrect = Rect.Empty;
@@ -3276,7 +3292,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 			return Helpers.CreateSize(width + Padding.Right, _renderRects[_renderRects.Length - 1].Bottom + Padding.Bottom);
 		}
 
-        private Size CalcTilesVertical()
+        protected Size CalcTilesVertical()
         {
             Rect rrect = Rect.Empty;
             double height = 0;
@@ -3313,7 +3329,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
             return new Size(width + Padding.Right, height + Padding.Bottom);
         }
 
-        private Size CalcTilesHorizontal()
+        protected Size CalcTilesHorizontal()
         {
             Rect rrect = Rect.Empty;
             double height = 0;
@@ -3350,7 +3366,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
             return new Size(width + Padding.Right, height + Padding.Bottom);
         }
 
-        private Size CalcHorizontal()
+        protected Size CalcHorizontal()
 		{
 			double height = 0;
 			Rect rrect = Rect.Empty;
@@ -3376,7 +3392,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 			return Helpers.CreateSize(_renderRects[_renderRects.Length - 1].Right + Padding.Right, height + Padding.Bottom);
 		}
 
-		private Size CalcSingle()
+		protected Size CalcSingle()
 		{
 			Size ret = Helpers.CreateSize(0, 0);
 			Rect rrect = Rect.Empty;
@@ -3399,7 +3415,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 			return ret;
 		}
 
-        private Size CalcTilesLine()
+        protected Size CalcTilesLine()
         {
             Size ret = new Size(0, 0);
             Rect rrect = Rect.Empty;
@@ -3426,7 +3442,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
             return ret;
         }
 
-        private Rect renderRects(int index)
+        protected Rect renderRects(int index)
 		{
 			if (_renderRects != null)
 				return _renderRects[index].Rect();
@@ -3434,7 +3450,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 				return new Rect(0, 0, 0, 0);
 		}
 
-		private void SetCurrentPage(int index)
+		protected void SetCurrentPage(int index)
 		{
 			try
 			{
@@ -3460,7 +3476,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 			}
 		}
 
-		private bool CalcIntersectEntries(HighlightInfo existEntry, HighlightInfo addingEntry, out List<HighlightInfo> calcEntries)
+		protected bool CalcIntersectEntries(HighlightInfo existEntry, HighlightInfo addingEntry, out List<HighlightInfo> calcEntries)
 		{
 			calcEntries = new List<HighlightInfo>();
 			int eStart = existEntry.CharIndex;
@@ -3510,7 +3526,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 			return false;
 		}
 
-		private void CalcPages()
+		protected void CalcPages()
 		{
 			Size size;
 
@@ -3543,7 +3559,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
                 OnZoomChanged(EventArgs.Empty);
         }
 
-        private void UpdateScrollBars(Size size)
+        protected void UpdateScrollBars(Size size)
         {
             if (size.Width != 0 && size.Height != 0)
             {
@@ -3554,7 +3570,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
             }
         }
 
-        private bool GetWord(PdfText text, int ci, out int si, out int ei)
+        protected bool GetWord(PdfText text, int ci, out int si, out int ei)
 		{
 			si = ei = ci;
 			if (text == null)
@@ -3590,7 +3606,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 			return true;
 		}
 
-		private void StartInvalidateTimer()
+		protected void StartInvalidateTimer()
 		{
 			if (_invalidateTimer != null)
 				return;
@@ -3609,7 +3625,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 			_invalidateTimer.Start();
 		}
 
-        private int IdxWithLowestBottom(int from, int to)
+        protected int IdxWithLowestBottom(int from, int to)
         {
             int idx = from;
             for (int i = from + 1; i <= to; i++)
@@ -3726,44 +3742,44 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 		#endregion
 
 		#region FillForms event handlers
-		private void FormsInvalidate(object sender, InvalidatePageEventArgs e)
+		protected void FormsInvalidate(object sender, InvalidatePageEventArgs e)
 		{
 			OnFormsInvalidate(e);
 		}
 
-		private void FormsGotoPage(object sender, EventArgs<int> e)
+		protected void FormsGotoPage(object sender, EventArgs<int> e)
 		{
 			OnFormsGotoPage(e);
         }
 
-		private void FormsDoNamedAction(object sender, EventArgs<string> e)
+		protected void FormsDoNamedAction(object sender, EventArgs<string> e)
 		{
 			OnFormsDoNamedAction(e);
 		}
 
-		private void FormsDoGotoAction(object sender, DoGotoActionEventArgs e)
+		protected void FormsDoGotoAction(object sender, DoGotoActionEventArgs e)
 		{
 			OnFormsDoGotoAction(e);
 		}
 
-		private void FormsAppBeep(object sender, EventArgs<BeepTypes> e)
+		protected void FormsAppBeep(object sender, EventArgs<BeepTypes> e)
 		{
 			OnFormsAppBeep(e);
         }
 
-		private void FormsOutputSelectedRect(object sender, InvalidatePageEventArgs e)
+		protected void FormsOutputSelectedRect(object sender, InvalidatePageEventArgs e)
 		{
 			OnFormsOutputSelectedRect(e);
 		}
 
-		private void FormsSetCursor(object sender, SetCursorEventArgs e)
+		protected void FormsSetCursor(object sender, SetCursorEventArgs e)
 		{
 			OnFormsSetCursor(e);
 		}
 		#endregion
 
 		#region Miscellaneous event handlers
-		private void Pages_ProgressiveRender(object sender, ProgressiveRenderEventArgs e)
+		protected void Pages_ProgressiveRender(object sender, ProgressiveRenderEventArgs e)
 		{
 			e.NeedPause = _prPages.IsNeedPause(sender as PdfPage);
 		}
@@ -3792,7 +3808,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 		#endregion
 
 		#region Helpers
-		private Rect ClientRect
+		protected Rect ClientRect
 		{
 			get
 			{
@@ -4010,7 +4026,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 		/// <summary>
 		/// Scrolls up within content by one page.
 		/// </summary>
-		public void PageUp()
+		public virtual void PageUp()
 		{
 			double childHeight = (_viewport.Height * 1);// / this.InternalChildren.Count;
 			SetVerticalOffset(this.VerticalOffset - childHeight);
@@ -4019,7 +4035,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 		/// <summary>
 		/// Scrolls down within content by one page.
 		/// </summary>
-		public void PageDown()
+		public virtual void PageDown()
 		{
 			double childHeight = (_viewport.Height * 1);// / this.InternalChildren.Count;
 			SetVerticalOffset(this.VerticalOffset + childHeight);
@@ -4028,7 +4044,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 		/// <summary>
 		/// Scrolls left within content by one page.
 		/// </summary>
-		public void PageLeft()
+		public virtual void PageLeft()
 		{
 			double childWidth = (_viewport.Width * 1);// / this.InternalChildren.Count;
 			SetHorizontalOffset(this.HorizontalOffset - childWidth);
@@ -4037,7 +4053,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 		/// <summary>
 		/// Scrolls right within content by one page.
 		/// </summary>
-		public void PageRight()
+		public virtual void PageRight()
 		{
 			double childWidth = (_viewport.Width * 1);// / this.InternalChildren.Count;
 			SetHorizontalOffset(this.HorizontalOffset + childWidth);
@@ -4046,7 +4062,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 		/// <summary>
 		/// Scrolls up within content after a user clicks the wheel button on a mouse.
 		/// </summary>
-		public void MouseWheelUp()
+		public virtual void MouseWheelUp()
 		{
 			if (ScrollOwner.ComputedVerticalScrollBarVisibility == Visibility.Visible)
 				SetVerticalOffset(this.VerticalOffset - _viewport.Height / 10 * 1);
@@ -4059,7 +4075,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 		/// <summary>
 		/// Scrolls down within content after a user clicks the wheel button on a mouse.
 		/// </summary>
-		public void MouseWheelDown()
+		public virtual void MouseWheelDown()
 		{
 			if (ScrollOwner.ComputedVerticalScrollBarVisibility== Visibility.Visible)
 				SetVerticalOffset(this.VerticalOffset + _viewport.Height / 10 * 1);
@@ -4072,7 +4088,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 		/// <summary>
 		/// Scrolls left within content after a user clicks the wheel button on a mouse.
 		/// </summary>
-		public void MouseWheelLeft()
+		public virtual void MouseWheelLeft()
 		{
 			SetHorizontalOffset(this.HorizontalOffset - _viewport.Width / 10 * 3);
 		}
@@ -4080,7 +4096,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 		/// <summary>
 		/// Scrolls right within content after a user clicks the wheel button on a mouse.
 		/// </summary>
-		public void MouseWheelRight()
+		public virtual void MouseWheelRight()
 		{
 			SetHorizontalOffset(this.HorizontalOffset + _viewport.Height / 10 * 3);
 		}
@@ -4091,7 +4107,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 		#endregion
 
 		#region Select tool
-		private void ProcessMouseDoubleClickForSelectTextTool(Point page_point, int page_index)
+		protected virtual void ProcessMouseDoubleClickForSelectTextTool(Point page_point, int page_index)
 		{
 			var page = Document.Pages[page_index];
 			int si, ei;
@@ -4112,7 +4128,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 			}
 		}
 
-		private void ProcessMouseDownForSelectTextTool(Point page_point, int page_index)
+		protected virtual void ProcessMouseDownForSelectTextTool(Point page_point, int page_index)
 		{
 			_selectInfo = new SelectInfo()
 			{
@@ -4126,7 +4142,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
                 GenerateSelectedTextProperty();
         }
 
-		private void ProcessMouseMoveForSelectTextTool(int page_index, int character_index)
+		protected virtual void ProcessMouseMoveForSelectTextTool(int page_index, int character_index)
 		{
 			if (_mousePressed)
 			{
@@ -4147,7 +4163,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 		#endregion
 
 		#region Default tool
-		private void ProcessMouseDownDefaultTool(Point page_point, int page_index)
+		protected virtual void ProcessMouseDownDefaultTool(Point page_point, int page_index)
 		{
 			var pdfLink = Document.Pages[page_index].Links.GetLinkAtPoint((float)page_point.X, (float)page_point.Y);
 			var webLink = Document.Pages[page_index].Text.WebLinks.GetWebLinkAtPoint((float)page_point.X, (float)page_point.Y);
@@ -4157,7 +4173,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 				_mousePressedInLink = false;
 		}
 
-		private void ProcessMouseMoveForDefaultTool(Point page_point, int page_index)
+        protected virtual void ProcessMouseMoveForDefaultTool(Point page_point, int page_index)
 		{
 			var pdfLink = Document.Pages[page_index].Links.GetLinkAtPoint((float)page_point.X, (float)page_point.Y);
 			var webLink = Document.Pages[page_index].Text.WebLinks.GetWebLinkAtPoint((float)page_point.X, (float)page_point.Y);
@@ -4166,7 +4182,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 
 		}
 
-		private void PriocessMouseUpForDefaultTool(Point page_point, int page_index)
+		protected virtual void PriocessMouseUpForDefaultTool(Point page_point, int page_index)
 		{
 			if (_mousePressedInLink)
 			{
@@ -4179,14 +4195,14 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 		#endregion
 
 		#region Pan tool
-		private void ProcessMouseDownPanTool(Point mouse_point)
+		protected virtual void ProcessMouseDownPanTool(Point mouse_point)
 		{
 			_panToolInitialScrollPosition = _autoScrollPosition;
 			_panToolInitialMousePosition = mouse_point;
 			CaptureMouse();
 		}
 
-		private void ProcessMouseMoveForPanTool(Point mouse_point)
+		protected virtual void ProcessMouseMoveForPanTool(Point mouse_point)
 		{
 			if (!_mousePressed)
 				return;
@@ -4196,7 +4212,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 			SetHorizontalOffset(-_panToolInitialScrollPosition.X - xOffs);
 		}
 
-		private void ProcessMouseUpPanTool(Point mouse_point)
+		protected virtual void ProcessMouseUpPanTool(Point mouse_point)
 		{
 			ReleaseMouseCapture();
 		}
