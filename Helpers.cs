@@ -53,27 +53,27 @@ namespace Patagames.Pdf.Net.Controls.Wpf
         private static Color _emptyColor = Color.FromArgb(0, 0, 0, 0);
 		public static Color ColorEmpty { get { return _emptyColor; } }
 
-		internal static Pen CreatePen(Brush brush, double thick = 1.0)
+		public static Pen CreatePen(Brush brush, double thick = 1.0)
 		{
 			return new Pen(brush, thick);
 		}
 
-		internal static Pen CreatePen(Color color, double thick=1.0)
+		public static Pen CreatePen(Color color, double thick=1.0)
 		{
 			return CreatePen(CreateBrush(color), thick);
 		}
 
-		internal static Brush CreateBrush(Color color)
+		public static Brush CreateBrush(Color color)
 		{
 			return new SolidColorBrush(color);
         }
 
-		internal static int ToArgb(Color color)
+		public static int ToArgb(Color color)
 		{
 			return (color.A << 24) | (color.R << 16) | (color.G << 8) | color.B;
 		}
 
-		internal static Size CreateSize(double nw, double nh)
+		public static Size CreateSize(double nw, double nh)
 		{
 			if (nw < 0)
 				nw = 0;
@@ -82,7 +82,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 			return new Size(nw, nh);
 		}
 
-		internal static RenderRect CreateRenderRect(double x, double y, double w, double h, bool isChecked)
+		public static RenderRect CreateRenderRect(double x, double y, double w, double h, bool isChecked)
 		{
 			if (w < 0)
 				w = 0;
@@ -91,7 +91,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 			return new RenderRect(x, y, w, h, isChecked);
 		}
 
-		internal static Rect CreateRect(double x, double y, double w, double h)
+		public static Rect CreateRect(double x, double y, double w, double h)
 		{
 			if (w < 0)
 				w = 0;
@@ -100,7 +100,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 			return new Rect(x, y, w, h);
 		}
 
-		internal static Rect CreateRect(Point location, Size size)
+		public static Rect CreateRect(Point location, Size size)
 		{
 			if (size.Width < 0)
 				size.Width = 0;
@@ -109,12 +109,12 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 			return new Rect(location, size);
 		}
 
-		internal static double ThicknessHorizontal(Thickness pageMargin)
+		public static double ThicknessHorizontal(Thickness pageMargin)
 		{
 			return pageMargin.Left + pageMargin.Right;
         }
 
-		internal static double ThicknessVertical(Thickness pageMargin)
+		public static double ThicknessVertical(Thickness pageMargin)
 		{
 			return pageMargin.Top + pageMargin.Bottom;
         }
