@@ -2404,17 +2404,15 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 			drawingContext.DrawText(ft, new Point(x, y));
 		}
 
-      /// <summary>
-      /// Draws page's border
-      /// </summary>
-      /// <param name="drawingContext">The drawing context</param>
-      /// <param name="BBox">Page's bounding box</param>
-      /// <param name="i"></param>
-      /// <remarks>
-      /// Please see the remarks section of <see cref="OnRender"/> for getting more info about page rendering order.
-      /// </remarks>
-      protected virtual void DrawPageBorder(DrawingContext drawingContext,
-                                            Rect           BBox)
+        /// <summary>
+        /// Draws page's border
+        /// </summary>
+        /// <param name="drawingContext">The drawing context</param>
+        /// <param name="BBox">Page's bounding box</param>
+        /// <remarks>
+        /// Please see the remarks section of <see cref="OnRender"/> for getting more info about page rendering order.
+        /// </remarks>
+        protected virtual void DrawPageBorder(DrawingContext drawingContext, Rect BBox)
 		{
 			//Draw page border
 			Helpers.DrawRectangle(drawingContext, _pageBorderColorPen, BBox);
