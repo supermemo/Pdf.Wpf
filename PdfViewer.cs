@@ -2011,7 +2011,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 					//Draw current page highlight
 					DrawCurrentPageHighlight(drawingContext, i, actualRect);
 
-				    DrawCustom(drawingContext, i);
+				    DrawCustom(drawingContext, actualRect, i);
 				}
         
 				if (!allPagesAreRendered)
@@ -2368,7 +2368,9 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 			}
 		}
 
-        protected virtual void DrawCustom(DrawingContext drawingContext, int pageIndex)
+        protected virtual void DrawCustom(DrawingContext drawingContext,
+                                          Rect           actualRect,
+                                          int            pageIndex)
         {
         }
 
@@ -2402,15 +2404,17 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 			drawingContext.DrawText(ft, new Point(x, y));
 		}
 
-        /// <summary>
-        /// Draws page's border
-        /// </summary>
-        /// <param name="drawingContext">The drawing context</param>
-        /// <param name="BBox">Page's bounding box</param>
-        /// <remarks>
-        /// Please see the remarks section of <see cref="OnRender"/> for getting more info about page rendering order.
-        /// </remarks>
-        protected virtual void DrawPageBorder(DrawingContext drawingContext, Rect BBox)
+      /// <summary>
+      /// Draws page's border
+      /// </summary>
+      /// <param name="drawingContext">The drawing context</param>
+      /// <param name="BBox">Page's bounding box</param>
+      /// <param name="i"></param>
+      /// <remarks>
+      /// Please see the remarks section of <see cref="OnRender"/> for getting more info about page rendering order.
+      /// </remarks>
+      protected virtual void DrawPageBorder(DrawingContext drawingContext,
+                                            Rect           BBox)
 		{
 			//Draw page border
 			Helpers.DrawRectangle(drawingContext, _pageBorderColorPen, BBox);
@@ -3705,7 +3709,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 		/// Sets the amount of vertical offset.
 		/// </summary>
 		/// <param name="offset">The degree to which content is vertically offset from the containing viewport.</param>
-		public void SetVerticalOffset(double offset)
+		public virtual void SetVerticalOffset(double offset)
 		{
 			if (offset < 0 || _viewport.Height >= _extent.Height)
 			{
