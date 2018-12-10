@@ -67,14 +67,32 @@ namespace Patagames.Pdf.Net.Controls.Wpf.ToolBars
 		{
 			InitializeButtons();
 			UpdateButtons();
-		}
-		#endregion
 
-		#region Protected methods
-		/// <summary>
-		/// Create all buttons and add its into toolbar. Override this method to create custom buttons
-		/// </summary>
-		protected virtual void InitializeButtons()
+            Loaded += PdfToolBar_Loaded;
+		}
+        #endregion
+
+        #region Protected methods
+	    private void PdfToolBar_Loaded(object sender, RoutedEventArgs e)
+	    {
+	        ToolBar toolBar      = sender as ToolBar;
+	        var     overflowGrid = toolBar.Template.FindName("OverflowGrid", toolBar) as FrameworkElement;
+	        if (overflowGrid != null)
+	        {
+	           overflowGrid.Visibility = Visibility.Collapsed;
+	        }
+
+	        var mainPanelBorder = toolBar.Template.FindName("MainPanelBorder", toolBar) as FrameworkElement;
+	        if (mainPanelBorder != null)
+	        {
+	            mainPanelBorder.Margin = new Thickness();
+	        }
+	    }
+
+        /// <summary>
+        /// Create all buttons and add its into toolbar. Override this method to create custom buttons
+        /// </summary>
+        protected virtual void InitializeButtons()
 		{
 
 		}
@@ -158,6 +176,20 @@ namespace Patagames.Pdf.Net.Controls.Wpf.ToolBars
 			return btn;
 		}
 
+
+	    protected virtual ToggleButton CreateToggleButton(string             name,
+	                                                      string             text,
+	                                                      string             toolTipText,
+	                                                      string             imgResName,
+	                                                      RoutedEventHandler onClick,
+	                                                      int                imgWidth      = 32,
+	                                                      int                imgHeight     = 32,
+	                                                      ImageTextType      imageTextType = ImageTextType.ImageBeforeText)
+	    {
+            var imgResUri = CreateUriToResource(imgResName);
+            return CreateToggleButton(name, text, toolTipText, imgResUri, onClick, imgWidth, imgHeight, imageTextType);
+	    }
+
 		/// <summary>
 		/// Create a new instance of ToggleButon class with the specified name that displays the specified text and image and that raises the Click event.
 		/// </summary>
@@ -170,7 +202,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf.ToolBars
 		/// <param name="imgHeight">Image height</param>
 		/// <param name="imageTextType">Image and text layout</param>
 		/// <returns>Newly created ToggleButton</returns>
-		protected virtual ToggleButton CreateToggleButton(string name, string text, string toolTipText, string imgResName, RoutedEventHandler onClick, int imgWidth = 32, int imgHeight = 32, ImageTextType imageTextType = ImageTextType.ImageBeforeText)
+		protected virtual ToggleButton CreateToggleButton(string name, string text, string toolTipText, Uri imgResUri, RoutedEventHandler onClick, int imgWidth = 32, int imgHeight = 32, ImageTextType imageTextType = ImageTextType.ImageBeforeText)
 		{
 			ToggleButton btn = new ToggleButton();
 			btn.Name = name;
@@ -182,10 +214,10 @@ namespace Patagames.Pdf.Net.Controls.Wpf.ToolBars
 			Image img = null;
 			TextBlock txt = null;
 
-			if (imgResName != null)
+			if (imgResUri != null)
 				img = new Image()
 				{
-					Source = new BitmapImage(new Uri("pack://application:,,,/Patagames.Pdf.Wpf;component/Resources/" + imgResName, UriKind.Absolute)),
+					Source = new BitmapImage(imgResUri),
 					Stretch = System.Windows.Media.Stretch.Fill,
 					Width = imgWidth,
 					Height = imgHeight,

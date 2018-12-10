@@ -1359,7 +1359,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 		/// </summary>
 		/// <param name="pageIndex">Zero-based index of a page.</param>
 		/// <param name="pagePoint">Point on the page in the page's coordinate system</param>
-		public void ScrollToPoint(int pageIndex, Point pagePoint)
+		public virtual void ScrollToPoint(int pageIndex, Point pagePoint)
 		{
 			if (Document == null)
 				return;
@@ -2536,7 +2536,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
             return true;
         }
 
-        protected void SaveScrollPoint()
+        protected virtual void SaveScrollPoint()
 		{
 			_scrollPointSaved = false;
 			if (_renderRects != null)
@@ -2546,7 +2546,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 			}
 		}
 
-		protected void RestoreScrollPoint()
+		protected virtual void RestoreScrollPoint()
 		{
 			if (_scrollPointSaved)
 			{
