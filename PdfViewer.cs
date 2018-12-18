@@ -2111,7 +2111,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 
 				if (idx >= 0)
 				{
-					int ei = Document.Pages[idx].Text.GetCharIndexAtPos((float)page_point.X, (float)page_point.Y, 10.0f, 10.0f);
+					int ei = GetCharIndexAtPos(idx, page_point);
 
 					if (!Document.Pages[idx].OnMouseMove(0, (float)page_point.X, (float)page_point.Y))
 					{
@@ -3357,6 +3357,16 @@ namespace Patagames.Pdf.Net.Controls.Wpf
             }
         }
 
+        protected virtual int GetCharIndexAtPos(int pageIdx, Point pagePoint)
+        {
+            return Document.Pages[pageIdx].Text.GetCharIndexAtPos(
+                (int)pagePoint.X,
+                (int)pagePoint.Y,
+                10.0f,
+                10.0f
+            );
+        }
+
         protected bool GetWord(PdfText text, int ci, out int si, out int ei)
 		{
 			si = ei = ci;
@@ -3898,7 +3908,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 		{
 			var page = Document.Pages[page_index];
 			int si, ei;
-			int ci = page.Text.GetCharIndexAtPos((float)page_point.X, (float)page_point.Y, 10.0f, 10.0f);
+			int ci = GetCharIndexAtPos(page_index, page_point);
 			if (GetWord(page.Text, ci, out si, out ei))
 			{
 				_selectInfo = new SelectInfo()
@@ -3921,7 +3931,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 			{
 				StartPage = page_index,
 				EndPage = page_index,
-				StartIndex = Document.Pages[page_index].Text.GetCharIndexAtPos((float)page_point.X, (float)page_point.Y, 10.0f, 10.0f),
+				StartIndex = GetCharIndexAtPos(page_index, page_point),
 				EndIndex = -1// Document.Pages[page_index].Text.GetCharIndexAtPos((float)page_point.X, (float)page_point.Y, 10.0f, 10.0f)
 			};
 			_isShowSelection = false;
