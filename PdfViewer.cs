@@ -1450,7 +1450,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 		/// <summary>
 		/// Clear text selection
 		/// </summary>
-		public void DeselectText()
+		public virtual void DeselectText()
 		{
 			_selectInfo = new SelectInfo()
 			{
@@ -2556,7 +2556,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 			}
 		}
 
-		protected void GenerateSelectedTextProperty()
+		protected virtual void GenerateSelectedTextProperty()
         {
             string ret = "";
             if (Document != null)
