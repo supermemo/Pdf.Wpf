@@ -99,7 +99,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
             PdfBitmap bitmap = this[page].Bitmap;
             bool ret = ProcessExisting(bitmap ?? CanvasBitmap, page, pageRect, pageRotate, renderFlags);
             if (bitmap != null)
-                Pdfium.FPDFBitmap_TransferBitmap(CanvasBitmap.Handle, pageRect.X, pageRect.Y, pageRect.Width, pageRect.Height, bitmap.Handle, pageRect.X, pageRect.Y);
+                Pdfium.FPDFBitmap_CompositeBitmap(CanvasBitmap.Handle, pageRect.X, pageRect.Y, pageRect.Width, pageRect.Height, bitmap.Handle, pageRect.X, pageRect.Y, BlendTypes.FXDIB_BLEND_NORMAL);
             return ret;
         }
 
@@ -109,7 +109,11 @@ namespace Patagames.Pdf.Net.Controls.Wpf
         /// <returns>Null if page still painting, PdfBitmap object if page successfully rendered.</returns>
         private bool ProcessExisting(PdfBitmap bitmap, PdfPage page, Int32Rect pageRect, PageRotate pageRotate, RenderFlags renderFlags)
 		{
-			switch (this[page].status)
+#if PDF_ENABLE_XFA
+            if (page.Document.FormFill != null && page.Document.FormFill.DocumentType == DocumentTypes.DynamicXfa)
+                this[page].status = ProgressiveRenderingStatuses.RenderDone + 2;
+#endif
+            switch (this[page].status)
 			{
 				case ProgressiveRenderingStatuses.RenderReader:
 					this[page].status = page.StartProgressiveRender(bitmap, pageRect.X, pageRect.Y, pageRect.Width, pageRect.Height, pageRotate, renderFlags, null);
