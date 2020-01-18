@@ -2650,8 +2650,7 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 		}
 #endregion
 
-        #region Protected methods
-#region Other protected methods
+#region Protected methods
         /// <summary>
         /// Sets the cursor that is displayed when the mouse pointer is over the control.
         /// </summary>
@@ -3143,12 +3142,12 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 			return selTmp;
 		}
 
-        protected List<Int32Rect> NormalizeRects(IEnumerable<FS_RECTF> rects, int pageIndex, IEnumerable<FS_RECTF> rectsBefore, IEnumerable<FS_RECTF> rectsAfter)
+        protected virtual List<Int32Rect> NormalizeRects(IEnumerable<FS_RECTF> rects, int pageIndex, IEnumerable<FS_RECTF> rectsBefore, IEnumerable<FS_RECTF> rectsAfter)
         {
             return NormalizeRects(rects, pageIndex, rectsBefore, rectsAfter, new FS_RECTF());
         }
 
-        protected List<Int32Rect> NormalizeRects(IEnumerable<FS_RECTF> rects, int pageIndex, IEnumerable<FS_RECTF> rectsBefore, IEnumerable<FS_RECTF> rectsAfter, FS_RECTF inflate)
+        protected virtual List<Int32Rect> NormalizeRects(IEnumerable<FS_RECTF> rects, int pageIndex, IEnumerable<FS_RECTF> rectsBefore, IEnumerable<FS_RECTF> rectsAfter, FS_RECTF inflate)
         {
             List<Int32Rect> rows = new List<Int32Rect>();
 
