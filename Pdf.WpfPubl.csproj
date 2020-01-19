@@ -143,7 +143,6 @@
       <DependentUpon>SearchBar.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModes.cs" />
-    <EmbeddedResource Include="Pdf.Net.SDK.licx" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
