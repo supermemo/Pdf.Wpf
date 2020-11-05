@@ -2323,8 +2323,6 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 		{
 			if (Document != null)
 			{
-				var formsKey = (FWL_VKEYCODE)KeyInterop.VirtualKeyFromKey(e.Key);
-
 				KeyboardModifiers mod = (KeyboardModifiers)0;
 
 				if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
@@ -2333,10 +2331,14 @@ namespace Patagames.Pdf.Net.Controls.Wpf
 					mod |= KeyboardModifiers.ShiftKey;
 				if (Keyboard.IsKeyDown(Key.LeftAlt) || Keyboard.IsKeyDown(Key.RightAlt))
 					mod |= KeyboardModifiers.AltKey;
+        
+        var formsKey = (FWL_VKEYCODE)KeyInterop.VirtualKeyFromKey(
+          mod.HasFlag(KeyboardModifiers.AltKey) ? e.SystemKey : e.Key);
 
 				if(Document.Pages.CurrentPage.OnKeyDown(formsKey, mod))
 					e.Handled = true;
 			}
+
 			base.OnPreviewKeyDown(e);
 		}
 
